@@ -11,7 +11,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from blitz_api.factories import AdminFactory, UserFactory
 
-from ..models import Retirement, WaitQueue
+from ..models import Retreat, WaitQueue
 
 User = get_user_model()
 
@@ -29,9 +29,9 @@ class WaitQueueTests(APITestCase):
         cls.admin = AdminFactory()
 
     def setUp(self):
-        self.retirement = Retirement.objects.create(
-            name="mega_retirement",
-            details="This is a description of the mega retirement.",
+        self.retreat = Retreat.objects.create(
+            name="mega_retreat",
+            details="This is a description of the mega retreat.",
             seats=400,
             address_line1="123 random street",
             postal_code="123 456",
@@ -54,18 +54,18 @@ class WaitQueueTests(APITestCase):
         )
         self.wait_queue_subscription = WaitQueue.objects.create(
             user=self.user2,
-            retirement=self.retirement,
+            retreat=self.retreat,
         )
 
     def test_create(self):
         """
-        Ensure we can subscribe a user to a retirement wait_queue.
+        Ensure we can subscribe a user to a retreat wait_queue.
         """
         self.client.force_authenticate(user=self.user)
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             # The 'user' field is ignored when the calling user is not admin.
             # The field is REQUIRED nonetheless.
@@ -73,7 +73,7 @@ class WaitQueueTests(APITestCase):
         }
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
@@ -85,8 +85,8 @@ class WaitQueueTests(APITestCase):
         )
 
         content = {
-            'retirement': 'http://testserver/retirement/retirements/' +
-                          str(self.retirement.id),
+            'retreat': 'http://testserver/retreat/retreats/' +
+                          str(self.retreat.id),
             'user': ''.join(['http://testserver/users/', str(self.user.id)]),
             'created_at': json.loads(response.content)['created_at'],
         }
@@ -102,20 +102,20 @@ class WaitQueueTests(APITestCase):
 
     def test_create_as_admin_for_user(self):
         """
-        Ensure we can subscribe another user to a retirement wait_queue as
+        Ensure we can subscribe another user to a retreat wait_queue as
         an admin user.
         """
         self.client.force_authenticate(user=self.admin)
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             'user': reverse('user-detail', args=[self.user.id]),
         }
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
@@ -127,8 +127,8 @@ class WaitQueueTests(APITestCase):
         )
 
         content = {
-            'retirement': 'http://testserver/retirement/retirements/' +
-                          str(self.retirement.id),
+            'retreat': 'http://testserver/retreat/retreats/' +
+                          str(self.retreat.id),
             'user': ''.join(['http://testserver/users/', str(self.user.id)]),
         }
 
@@ -144,19 +144,19 @@ class WaitQueueTests(APITestCase):
 
     def test_create_not_authenticated(self):
         """
-        Ensure we can't subscribe to a retirement waitqueue if user has no
+        Ensure we can't subscribe to a retreat waitqueue if user has no
         permission.
         """
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             'user': reverse('user-detail', args=[self.user.id]),
         }
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
@@ -171,26 +171,26 @@ class WaitQueueTests(APITestCase):
 
     def test_create_duplicate(self):
         """
-        Ensure we can't subscribe to a retirement waitqueue twice.
+        Ensure we can't subscribe to a retreat waitqueue twice.
         """
         self.client.force_authenticate(user=self.admin)
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             'user': reverse('user-detail', args=[self.user2.id]),
         }
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
 
         content = {
             "non_field_errors": [
-                "The fields user, retirement must make a unique set."
+                "The fields user, retreat must make a unique set."
             ]
         }
 
@@ -200,7 +200,7 @@ class WaitQueueTests(APITestCase):
 
     def test_create_missing_field(self):
         """
-        Ensure we can't subscribe to a retirement waitqueue when required field
+        Ensure we can't subscribe to a retreat waitqueue when required field
         are missing.
         """
         self.client.force_authenticate(user=self.admin)
@@ -208,13 +208,13 @@ class WaitQueueTests(APITestCase):
         data = {}
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
 
         content = {
-            "retirement": ["This field is required."],
+            "retreat": ["This field is required."],
             "user": ["This field is required."]
         }
 
@@ -224,24 +224,24 @@ class WaitQueueTests(APITestCase):
 
     def test_create_invalid_field(self):
         """
-        Ensure we can't subscribe to a retirement waitqueue with invalid
+        Ensure we can't subscribe to a retreat waitqueue with invalid
         fields.
         """
         self.client.force_authenticate(user=self.admin)
 
         data = {
-            'retirement': (1,),
+            'retreat': (1,),
             'user': "http://testserver/invalid/999"
         }
 
         response = self.client.post(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             data,
             format='json',
         )
 
         content = {
-            'retirement': [
+            'retreat': [
                 'Incorrect type. Expected URL string, received list.'
             ],
             'user': ['Invalid hyperlink - No URL match.']
@@ -253,20 +253,20 @@ class WaitQueueTests(APITestCase):
 
     def test_update(self):
         """
-        Ensure we can't update a subscription to a retirement waitqueue.
+        Ensure we can't update a subscription to a retreat waitqueue.
         """
         self.client.force_authenticate(user=self.admin)
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             'user': reverse('user-detail', args=[self.user2.id]),
         }
 
         response = self.client.put(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': 1},
             ),
             data,
@@ -280,20 +280,20 @@ class WaitQueueTests(APITestCase):
 
     def test_partial_update(self):
         """
-        Ensure we can't partially a subscription to a retirement waitqueue.
+        Ensure we can't partially a subscription to a retreat waitqueue.
         """
         self.client.force_authenticate(user=self.admin)
 
         data = {
-            'retirement': reverse(
-                'retirement:retirement-detail', args=[self.retirement.id]
+            'retreat': reverse(
+                'retreat:retreat-detail', args=[self.retreat.id]
             ),
             'user': reverse('user-detail', args=[self.user2.id]),
         }
 
         response = self.client.put(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': 1},
             ),
             data,
@@ -307,14 +307,14 @@ class WaitQueueTests(APITestCase):
 
     def test_delete(self):
         """
-        Ensure we can delete a subscription to a retirement waitqueue.
+        Ensure we can delete a subscription to a retreat waitqueue.
         The index determining the next user to be notified should be corrected.
         """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': self.wait_queue_subscription.id},
             ),
         )
@@ -325,18 +325,18 @@ class WaitQueueTests(APITestCase):
             response.content
         )
 
-        self.retirement.refresh_from_db()
-        self.assertEqual(self.retirement.next_user_notified, 2)
+        self.retreat.refresh_from_db()
+        self.assertEqual(self.retreat.next_user_notified, 2)
 
     def test_list(self):
         """
-        Ensure we can list subscriptions to retirement waitqueues as an
+        Ensure we can list subscriptions to retreat waitqueues as an
         authenticated user.
         """
         self.client.force_authenticate(user=self.user2)
 
         response = self.client.get(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             format='json',
         )
 
@@ -349,11 +349,11 @@ class WaitQueueTests(APITestCase):
             'results': [{
                 'created_at': response_data['results'][0]['created_at'],
                 'id': self.wait_queue_subscription.id,
-                'retirement':
-                    'http://testserver/retirement/retirements/' +
-                    str(self.retirement.id),
+                'retreat':
+                    'http://testserver/retreat/retreats/' +
+                    str(self.retreat.id),
                 'url':
-                    'http://testserver/retirement/wait_queues/' +
+                    'http://testserver/retreat/wait_queues/' +
                     str(self.wait_queue_subscription.id),
                 'user': 'http://testserver/users/' + str(self.user2.id)
             }]
@@ -365,12 +365,12 @@ class WaitQueueTests(APITestCase):
 
     def test_list_not_authenticated(self):
         """
-        Ensure we can't list subscriptions to retirement waitqueues as an
+        Ensure we can't list subscriptions to retreat waitqueues as an
         unauthenticated user.
         """
 
         response = self.client.get(
-            reverse('retirement:waitqueue-list'),
+            reverse('retreat:waitqueue-list'),
             format='json',
         )
 
@@ -382,25 +382,25 @@ class WaitQueueTests(APITestCase):
 
     def test_read(self):
         """
-        Ensure we can read read a subscription to a retirement as an
+        Ensure we can read read a subscription to a retreat as an
         authenticated user.
         """
         self.client.force_authenticate(user=self.user2)
 
         response = self.client.get(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': self.wait_queue_subscription.id},
             ),
         )
 
         content = {
             'id': self.wait_queue_subscription.id,
-            'retirement':
-                'http://testserver/retirement/retirements/' +
-                str(self.retirement.id),
+            'retreat':
+                'http://testserver/retreat/retreats/' +
+                str(self.retreat.id),
             'url':
-                'http://testserver/retirement/wait_queues/' +
+                'http://testserver/retreat/wait_queues/' +
                 str(self.wait_queue_subscription.id),
             'user': ''.join(['http://testserver/users/', str(self.user2.id)]),
             'created_at': json.loads(response.content)['created_at'],
@@ -412,13 +412,13 @@ class WaitQueueTests(APITestCase):
 
     def test_read_not_authenticated(self):
         """
-        Ensure we can't read a subscription to a retirement waitqueues as an
+        Ensure we can't read a subscription to a retreat waitqueues as an
         unauthenticated user.
         """
 
         response = self.client.get(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': 1},
             ),
             format='json',
@@ -432,14 +432,14 @@ class WaitQueueTests(APITestCase):
 
     def test_read_as_admin(self):
         """
-        Ensure we can read read a subscription to a retirement as an admin
+        Ensure we can read read a subscription to a retreat as an admin
         user.
         """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': self.wait_queue_subscription.id},
             ),
         )
@@ -448,11 +448,11 @@ class WaitQueueTests(APITestCase):
 
         content = {
             'id': self.wait_queue_subscription.id,
-            'retirement':
-                'http://testserver/retirement/retirements/' +
-                str(self.retirement.id),
+            'retreat':
+                'http://testserver/retreat/retreats/' +
+                str(self.retreat.id),
             'url':
-                'http://testserver/retirement/wait_queues/' +
+                'http://testserver/retreat/wait_queues/' +
                 str(self.wait_queue_subscription.id),
             'user': ''.join(['http://testserver/users/', str(self.user2.id)]),
             'created_at': json.loads(response.content)['created_at'],
@@ -464,14 +464,14 @@ class WaitQueueTests(APITestCase):
 
     def test_read_non_existent(self):
         """
-        Ensure we get not found when asking for a subscription to a retirement
+        Ensure we get not found when asking for a subscription to a retreat
         that doesn't exist.
         """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
             reverse(
-                'retirement:waitqueue-detail',
+                'retreat:waitqueue-detail',
                 kwargs={'pk': 999},
             ),
         )

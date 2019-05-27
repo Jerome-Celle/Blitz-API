@@ -60,7 +60,7 @@ class Order(models.Model):
         orderlines = self.order_lines.filter(
             models.Q(content_type__model='membership') |
             models.Q(content_type__model='package') |
-            models.Q(content_type__model='retirement')
+            models.Q(content_type__model='retreat')
         )
         for orderline in orderlines:
             cost += orderline.cost * orderline.quantity
@@ -413,10 +413,10 @@ class Coupon(SafeDeleteModel):
         blank=True,
     )
 
-    applicable_retirements = models.ManyToManyField(
-        'retirement.Retirement',
+    applicable_retreats = models.ManyToManyField(
+        'retreat.Retreat',
         related_name="applicable_coupons",
-        verbose_name=_("Applicable retirements"),
+        verbose_name=_("Applicable retreats"),
         blank=True,
     )
 
@@ -444,7 +444,7 @@ class Coupon(SafeDeleteModel):
     # This M2M field make a whole product family (ie: memberships) applicable
     # to a coupon. This overrides specific products.
     # For example, a coupon can be applied to "Membership 2", "Package 12" and
-    # all "Retirement".
+    # all "Retreat".
     applicable_product_types = models.ManyToManyField(
         ContentType,
         blank=True,
