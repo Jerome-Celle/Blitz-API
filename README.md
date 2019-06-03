@@ -15,7 +15,75 @@ Feel free to create an account there to begin contributing!
 
 ---
 
-# Quickstart
+# Quickstart with Docker
+
+## Clone the project
+
+First of all, you need to clone the project on your computer with :
+
+```
+git clone https://github.com/FJNR-inc/Blitz-API.git
+```
+
+## Build the projet
+
+```
+docker-compose build
+```
+
+
+## Configure the database
+
+Django has a system of database migration. You first need to apply all existing "migrations" to update your local database.
+
+```
+docker-compose run --rm api python manage.py migrate
+```
+
+**Note**: ``--rm`` option is use to remove the container create for the run command
+
+## Create superuser
+
+```
+docker-compose run --rm api python manage.py createsuperuser
+```
+
+## Run Test
+```
+docker-compose run --rm api python manage.py test
+```
+
+## Start server
+```
+docker-compose up
+```
+
+# Deploiment
+
+## Open django shell
+
+```
+docker-compose run --rm api python manage.py shell
+```
+## Create and activate virtualenv
+```
+virtualenv env
+. env/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+## Deploiement with Zappa
+
+```
+zappa update dev
+zappa manage dev migrate
+zappa manage dev "collectstatic --noinput"
+```
+
+
+
+# Quickstart without docker
 
 We're going to install and configure the latest develop build of this API.
 
@@ -26,6 +94,7 @@ First of all, you need to clone the project on your computer with :
 ```
 git clone https://github.com/FJNR-inc/Blitz-API.git
 ```
+
 
 ## Create a virtual environment
 
@@ -85,6 +154,7 @@ You can now [visit the homepage](http://localhost:8000/) to validate the install
 ```
 http://localhost:8000/ and http://localhost:8000/admin
 ```
+
 
 ## Custom settings - NOT IMPLEMENTED YET
 
